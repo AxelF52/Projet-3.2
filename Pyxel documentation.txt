@@ -1,0 +1,109 @@
+# Init pyxel : (programme vierge / structure principale)
+
+pyxel.init(128, 128)
+pyxel.fullscreen(False)
+pyxel.load("name.pyxres")
+
+def draw():
+   pyxel.cls(0)
+
+def update():
+   pass
+
+pyxel.run(update, draw)
+
+# Mouvements Caméra : (dans update)
+   cam_x, cam_y = player.cam_x, player.cam_y
+   pyxel.bltm(-cam_x, -cam_y + 1, 0, 0, 0, pyxel.tilemap(0).width * 8, pyxel.tilemap(0).height * 8)
+   player.cam_x = max(0, min(player.x - 128 // 2, pyxel.tilemap(0).width * 8 - 128))
+   player.cam_y = max(0, min(player.y - 128 // 2, pyxel.tilemap(0).height * 8 - 128))
+
+
+# class Player simple avec déplacements + collisions
+class Player:
+    """
+    Joueur : collisions et mouvements
+    """
+    def __init__(self, x, y):
+        global tps
+        self.x = x
+        self.y = y
+        self.cam_x = 0
+        self.cam_y = 0
+        self.speed = 2
+        self.size = 8
+        self.direction = 1
+
+    def move(self, dx, dy):
+         if not self.is_collision(self.x + dx, self.y + dy):
+            if dx < 0:
+               self.direction = -1
+            elif dx > 0:
+               self.direction = 1
+            self.x += dx
+            self.y += dy
+
+    def is_collision(self, dx, dy):
+        tile_size = 8
+        corners = [(0, 0), (self.size - 1, 0), (0, self.size - 1), (self.size - 1, self.size - 1)]
+        full_blocks = [(5, 0), (5, 1), (7, 0), (4, 1), (6, 0), (6, 1), (7, 1), (7, 2), (6, 2), (5, 2),
+                       (7, 3), (6, 2), (5, 2), (7, 3), (6, 3), (5, 3), (7, 4), (6, 4), (5, 4), (7, 5),
+                       (6, 5), (5, 5)]
+
+        for corner in corners:
+            tile_x = (dx + corner[0]) // tile_size
+            tile_y = (dy + corner[1]) // tile_size
+
+            block_at_position = pyxel.tilemap(0).pget(tile_x, tile_y)
+
+            if block_at_position in full_blocks:
+                return True
+
+        return False
+
+# Remplacer obj sur la map :
+    def replace_block(self, tilemap_id, x, y, old_tile_id, new_tile_id):
+        current_tile = pyxel.tilemap(tilemap_id).pget(x, y)
+        if current_tile == old_tile_id:
+            pyxel.tilemap(tilemap_id).pset(x, y, new_tile_id)
+
+
+# collisions entre 2 joueur/objs :
+    def is_collisions(self, player_x, player_y, player_size):
+        return (self.x < player_x + player_size and
+                self.x + self.width > player_x and
+                self.y < player_y + player_size and
+                self.y + self.height > player_y)
+
+# Boutton -> Action (à mettre dans le update)
+if pyxel.btnp(pyxel.KEY_UP):
+   print("action")
+
+# Faire un timer :
+tps = 0 # code principale
+
+def set_tps(self): # classe de l'obj concerné
+   self.tps_imu = tps
+
+def update(): # Update code principale
+    global tps
+    if tps - player.tps_imu >= 50: (50 en secondes)
+        démarer()
+
+   tps += 0.05 # actualiser le temps passé
+
+# Utiliser plusieurs fois la même class :
+mobs = [Mob(60, 113, 8, 8, 0.8, 75, (0, 8)),
+        Mob(168, 33, 8, 8, 0.8, 50, (16, 24)),
+        Mob(288, 89, 8, 8, 1, 100, (0, 8)),
+        Mob(558, 73, 8, 8, 1.5, 130, (16, 24)),
+        Mob(904, 73, 8, 8, 0.5, 40, (16, 24)),
+        Mob(1144, 65, 8, 8, 0.8, 60, (0, 8)),
+        Mob(1350, 41, 8, 8, 1, 67, (0, 8)),
+        Mob(1566, 97, 8, 8, 1.5, 80, (16, 24)),
+        Mob(1858, 81, 8, 8, 0.5, 37, (0, 8)),
+        Mob(1896, 57, 8, 8, 2, 63, (0, 16))]
+
+def update():
+   for mob in mobs:
+      mob.avancer()
