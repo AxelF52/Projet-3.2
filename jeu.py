@@ -58,6 +58,36 @@ class Player:
 
         return False  # Aucune collision
 
+class Spider:
+    def init(x, y)
+        self.x = x
+        self.y = y
+        self.cam_x = 0
+        self.cam_y = 0
+        self.speed = 2
+        self.size = 8
+        self.direction = 1
+        
+    def draw(self, cam_x, cam_y):
+        coeff = pyxel.frame_count // 4 % 4
+        if coeff == 0:
+            coord = (0, 8)
+        if coeff == 1:
+            coord = (16, 8)
+        if coeff == 2:
+            coord = (0, 24)
+        if coeff == 3:
+            coord = (16, 24)
+        pyxel.blt(self.x - cam_x, self.y - cam_y + 1, 0, coord[0], coord[1], 16, 16, 5)
+
+    def move(self, dx, dy):
+         if not self.is_collision(self.x + dx, self.y + dy):
+            if dx < 0:
+               self.direction = -1
+            elif dx > 0:
+               self.direction = 1
+            self.x += dx
+            self.y += dy
 
 player = Player(15, 128)
 
