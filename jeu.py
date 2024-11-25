@@ -5,12 +5,6 @@ pyxel.fullscreen(False)
 pyxel.load("data.pyxres")
 
 
-def draw():
-   pyxel.cls(0)
-
-def update():
-   pass
-
 class Player:
     """
     Joueur : collisions et mouvements
@@ -33,6 +27,30 @@ class Player:
                self.direction = 1
             self.x += dx
             self.y += dy
+            
+    def draw(self):
+        pyxel.draw
+
+player = Player(0, 0)
+
+def update():
+    cam_x, cam_y = player.cam_x, player.cam_y
+    pyxel.bltm(-cam_x, -cam_y + 1, 0, 0, 0, pyxel.tilemap(0).width * 8, pyxel.tilemap(0).height * 8)
+    player.cam_x = max(0, min(player.x - 128 // 2, pyxel.tilemap(0).width * 8 - 128))
+    player.cam_y = max(0, min(player.y - 128 // 2, pyxel.tilemap(0).height * 8 - 128))
+    if pyxel.btnp(pyxel.KEY_LEFT):
+        player.move(-player.speed, 0)
+    if pyxel.btnp(pyxel.KEY_RIGHT):
+        player.move(player.speed, 0)
+    if pyxel.btnp(pyxel.KEY_UP):
+        player.move(0, 15)
+    if not player.y < 1:
+        player.y -= 1
+       
+
+def draw():
+   pyxel.cls(0)
+   player.drawn()
 
 
 pyxel.run(update, draw)
