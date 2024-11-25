@@ -28,15 +28,23 @@ class Player:
             self.x += dx
             self.y += dy
             
-    def draw(self):
-        pyxel.rect(self.x, self.y, player.size, player.size, 8)
+    def draw(self, cam_x, cam_y):
+        #pyxel.rect(self.x, self.y, player.size, player.size, 8)
+        coeff = pyxel.frame_count // 4 % 4
+        if coeff == 0:
+            coord = (0, 8)
+        if coeff == 1:
+            coord = (16, 8)
+        if coeff == 2:
+            coord = (0, 24)
+        if coeff == 3:
+            coord = (16, 24)
+        pyxel.blt(self.x - cam_x, self.y - cam_y + 1, 0, coord[0], coord[1], 16, 16, 5)
 
     def is_collision(self, dx, dy):
         tile_size = 8
         corners = [(0, 0), (self.size - 1, 0), (0, self.size - 1), (self.size - 1, self.size - 1)]
-        full_blocks = [(5, 0), (5, 1), (7, 0), (4, 1), (6, 0), (6, 1), (7, 1), (7, 2), (6, 2), (5, 2),
-                       (7, 3), (6, 2), (5, 2), (7, 3), (6, 3), (5, 3), (7, 4), (6, 4), (5, 4), (7, 5),
-                       (6, 5), (5, 5)]
+        full_blocks = [(8, 0), (176, 112), (192, 176), (192, 192), (192, 208), (224, 128), (240,128)]
 
         for corner in corners:
             tile_x = (dx + corner[0]) // tile_size
@@ -68,7 +76,8 @@ def update():
 
 def draw():
    pyxel.cls(0)
-   player.draw()
-
+   cam_x, cam_y = player.cam_x, player.cam_y
+   pyxel.bltm(-cam_x, -cam_y + 1, 0, 0, 0, pyxel.tilemap(0).width * 8, pyxel.tilemap(0).height * 8)
+   player.draw(cam_x, cam_y)
 
 pyxel.run(update, draw)
