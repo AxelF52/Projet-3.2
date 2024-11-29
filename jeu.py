@@ -17,6 +17,8 @@ class Player:
         self.size = 16
         self.direction = 1
         self.vie = 3
+        self.tirs_liste = []
+        self.tirs_direction = []
 
     def draw(self, cam_x, cam_y):
         coeff = pyxel.frame_count // 6 % 6
@@ -63,6 +65,21 @@ class Player:
         left_tile = pyxel.tilemap(0).pget(self.x // 8, new_y // 8)
         right_tile = pyxel.tilemap(0).pget((self.x + self.size - 1) // 8, new_y // 8)
         return left_tile[0] == 1 or right_tile[0] == 1
+
+
+
+class Balles:
+    def __init__(self, x, y, direction):
+        self.x = x
+        self.y = y+4
+        self.direction = direction
+        self.speed = 0.3
+
+    def update(self):
+        self.x += self.speed * self.direction
+
+    def draw(self):
+        pyxel.blt(self.x, self.y, 0, 32, 8, 8, 8, 5)
 
 
 class Spiders:
@@ -139,6 +156,8 @@ class Spiders:
             pyxel.blt(self.x - cam_x, self.y - cam_y, 0, self.skin[3], 136, self.width * self.direction, self.height, 5)
 
     def is_collisions(self, x, y):
+        print(x, y)
+        print(self.x, self.y)
         if ((x - self.x)**2 + (y - self.y)**2)**0.5 < 3:
             self.attack = True
             return True
@@ -160,6 +179,7 @@ spiders = [Spiders(70, 20, 16, 16, 0.5, 15, [0, 16, 32, 48]),
            Spiders(1144, 22, 16, 16, 0.4, 15, [0, 16, 32, 48]),
            Spiders(1498, 27, 16, 16, 0.5, 15, [0, 16, 32, 48]),
            Spiders(1750, 52, 16, 16, 0.5, 15, [0, 16, 32, 48])]
+balles = []
 
 def update():
     if pyxel.btn(pyxel.KEY_LEFT):
@@ -174,26 +194,36 @@ def update():
         player.move(0, player.speed)
     if pyxel.btn(pyxel.KEY_A):
         print(player.x, player.y)
+    if pyxel.btnp(pyxel.KEY_SPACE):
+        cam_x, cam_y = player.cam_x, player.cam_y
+        balles.append(Balles(player.x-cam_x, player.y-cam_y, player.direction))
 
     for spider in spiders:
         spider.update()
         if spider.is_collisions(player.x, player.y):
             player.vie -= 1
-            spider.retour = True  # Active le retour
+            spider.retour = True
+        for balle in balles:
+            balle.update()
+            if not 0< balle.x < 128:
+                balles.remove(balle)
+            if spider.is_collisions(balle.x, balle.y):
+                spiders.remove(spider)
+                balles.remove(balle)
         spider.detect_joueur(player.x, player.y)
 
     update_camera()
-
-
 
 
 def draw():
     pyxel.cls(0)
     cam_x, cam_y = player.cam_x, player.cam_y
     pyxel.bltm(0, 0, 0, cam_x, cam_y, pyxel.width, pyxel.height)
-    player.draw(cam_x, cam_y)
     for spider in spiders:
         spider.draw(cam_x, cam_y)
+    for balle in balles:
+        balle.draw()
+    player.draw(cam_x, cam_y)
     pyxel.blt(112, 1, 0, 48, 216, 16, 16, 5)
 
 
