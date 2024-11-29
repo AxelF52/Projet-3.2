@@ -156,9 +156,7 @@ class Spiders:
             pyxel.blt(self.x - cam_x, self.y - cam_y, 0, self.skin[3], 136, self.width * self.direction, self.height, 5)
 
     def is_collisions(self, x, y):
-        print(x, y)
-        print(self.x, self.y)
-        if ((x - self.x)**2 + (y - self.y)**2)**0.5 < 3:
+        if ((x - self.x-player.cam_x)**2 + (y - self.y-player.cam_y)**2)**0.5 < 3:
             self.attack = True
             return True
 
