@@ -80,13 +80,12 @@ class Player:
                     self.tirs_liste.remove(tir)
 
     def tirs_gauche(self):
-        for tir in self.tirs_liste: # si le joueur regarde vers la dgauche
+        for tir in self.tirs_liste: # si le joueur regarde vers la gauche
                 tir[0] -= 4
                 if tir[0] < -120 or tir[0] > 120:
                     self.tirs_liste.remove(tir)
 
 player = Player(10, 55)
-
 
 def update():
     if pyxel.btn(pyxel.KEY_LEFT):
@@ -100,7 +99,6 @@ def update():
     if pyxel.btn(pyxel.KEY_DOWN):
         player.move(0, player.speed)
     update_camera()
-    
     
     if pyxel.btn(pyxel.KEY_LEFT):
         player.tirs_direction = -1
