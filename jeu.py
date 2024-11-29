@@ -14,6 +14,7 @@ class Player:
         self.speed = 1
         self.size = 16
         self.direction = 1
+        self.tirs_liste = []
 
     def draw(self, cam_x, cam_y):
         coeff = pyxel.frame_count // 4 % 4
@@ -64,6 +65,16 @@ class Player:
         right_tile = pyxel.tilemap(0).pget((self.x + self.size - 1) // 8, new_y // 8)
         return left_tile[0] == 1 or right_tile[0] == 1
 
+    def tirs(self):
+        if pyxel.btnr(pyxel.KEY_SPACE):
+            self.tirs_liste.append([self.x + 8, self.y + 4])
+
+    def tirs_deplacement(self):
+        for tir in self.tirs_liste:
+            tir[0] += 8
+            if tir[1] < -8:
+                self.tirs_liste.remove(tir)
+
 
 player = Player(10, 55)
 
@@ -81,12 +92,18 @@ def update():
         player.move(0, player.speed)
     update_camera()
 
+    player.tirs()
+    player.tirs_deplacement()
+
 
 def draw():
     pyxel.cls(0)
     cam_x, cam_y = player.cam_x, player.cam_y
     pyxel.bltm(0, 0, 0, cam_x, cam_y, pyxel.width, pyxel.height)
     player.draw(cam_x, cam_y)
+
+    for tir in player.tirs_liste:
+         pyxel.blt(tir[0], tir[1], 0, 32, 8, 8, 8)
 
 
 def update_camera():
