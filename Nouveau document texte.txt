@@ -1,0 +1,13 @@
+idée:
+Bonus:
+  def bonus_creation(self):
+        if pyxel.frame_count % 200 == 0:
+            bonus_type = random.choice(["vie", "tir", "vitesse"])
+            x_position = random.randint(0, 248)
+            self.bonus_liste.append({"type": bonus_type, "x": x_position, "y": 0})
+
+    def bonus_deplacement(self):
+        for bonus in self.bonus_liste:
+            bonus["y"] += 1
+            if bonus["y"] > 256:
+                self.bonus_liste.remove(bonus)
