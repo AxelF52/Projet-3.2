@@ -15,6 +15,7 @@ class Player:
         self.size = 16
         self.direction = 1
         self.tirs_liste = []
+        self.tirs_direction = 1
 
     def draw(self, cam_x, cam_y):
         coeff = pyxel.frame_count // 4 % 4
@@ -67,9 +68,9 @@ class Player:
 
     def tirs(self):
         if pyxel.btnr(pyxel.KEY_SPACE):
-            if self.direction == 1:
+            if self.tirs_direction == 1:
                 self.tirs_liste.append([self.x + 8, self.y + 4])
-            elif self.direction == -1:
+            elif self.tirs_direction == -1:
                 self.tirs_liste.append([self.x -8, self.y + 4])
 
     def tirs_droit(self):
@@ -81,7 +82,7 @@ class Player:
     def tirs_gauche(self):
         for tir in self.tirs_liste: # si le joueur regarde vers la dgauche
                 tir[0] -= 4
-                if tir[0] < 0 or tir[0] > 128:
+                if tir[0] < -120 or tir[0] > 120:
                     self.tirs_liste.remove(tir)
 
 player = Player(10, 55)
@@ -99,11 +100,17 @@ def update():
     if pyxel.btn(pyxel.KEY_DOWN):
         player.move(0, player.speed)
     update_camera()
+    
+    
+    if pyxel.btn(pyxel.KEY_LEFT):
+        player.tirs_direction = -1
+    if pyxel.btn(pyxel.KEY_RIGHT):
+        player.tirs_direction = 1
 
     player.tirs()
-    if player.direction == 1:
+    if player.tirs_direction == 1:
         player.tirs_droit()
-    if player.direction == -1:
+    if player.tirs_direction == -1:
         player.tirs_gauche()
 
 
