@@ -11,3 +11,15 @@ Bonus:
             bonus["y"] += 1
             if bonus["y"] > 256:
                 self.bonus_liste.remove(bonus)
+
+for bonus in self.bonus_liste:
+            if bonus["x"] < self.vaisseau_x + 8 and bonus["x"] + 8 > self.vaisseau_x and bonus["y"] < self.vaisseau_y + 8 and bonus["y"] + 8 > self.vaisseau_y:
+                if bonus["type"] == "vie":
+                    self.vies += 1
+                elif bonus["type"] == "tir":
+                    self.tir_multiple = True
+                    self.bonus_activetime = pyxel.frame_count + self.tir_multiple_duree
+                elif bonus["type"] == "vitesse":
+                    self.vitesse_vaisseau = 3
+                    self.bonus_activetime = pyxel.frame_count + self.tir_multiple_duree
+                self.bonus_liste.remove(bonus)
