@@ -1,0 +1,19 @@
+idée:
+Bonus:     En cours
+  def bonus_creation(self):
+        if pyxel.frame_count % 200 == 0:
+            bonus_type = random.choice(["vie", "tir", "vitesse"])
+            x_position = random.randint(0, 248)
+            self.bonus_liste.append({"type": bonus_type, "x": x_position, "y": 0})
+
+for bonus in self.bonus_liste:
+            if bonus["x"] < self.vaisseau_x + 8 and bonus["x"] + 8 > self.vaisseau_x and bonus["y"] < self.vaisseau_y + 8 and bonus["y"] + 8 > self.vaisseau_y:
+                if bonus["type"] == "vie":
+                    self.vies += 1
+                elif bonus["type"] == "tir":
+                    self.tir_multiple = True
+                    self.bonus_activetime = pyxel.frame_count + self.tir_multiple_duree
+                elif bonus["type"] == "vitesse":
+                    self.vitesse_vaisseau = 3
+                    self.bonus_activetime = pyxel.frame_count + self.tir_multiple_duree
+                self.bonus_liste.remove(bonus)
