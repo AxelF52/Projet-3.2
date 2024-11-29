@@ -16,6 +16,7 @@ class Player:
         self.direction = 1
         self.tirs_liste = []
         self.tirs_direction = 1
+        self.bonus_liste = []
 
     def draw(self, cam_x, cam_y):
         coeff = pyxel.frame_count // 4 % 4
@@ -84,6 +85,14 @@ class Player:
                 tir[0] -= 4
                 if tir[0] < -120 or tir[0] > 120:
                     self.tirs_liste.remove(tir)
+
+    def bonus_creation(self):
+        if pyxel.frame_count % 200 == 0:
+            bonus_type = random.choice(["vie", "tir", "grenade"])
+            x_position = # a voir
+            y_position = # a voir
+            self.bonus_liste.append({"type": bonus_type, "x": x_position, "y": y_position})
+
 
 player = Player(10, 55)
 
