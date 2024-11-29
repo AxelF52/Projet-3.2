@@ -67,14 +67,22 @@ class Player:
 
     def tirs(self):
         if pyxel.btnr(pyxel.KEY_SPACE):
-            self.tirs_liste.append([self.x + 8, self.y + 4])
+            if self.direction == 1:
+                self.tirs_liste.append([self.x + 8, self.y + 4])
+            elif self.direction == -1:
+                self.tirs_liste.append([self.x -8, self.y + 4])
 
-    def tirs_deplacement(self):
-        for tir in self.tirs_liste:
-            tir[0] += 8
-            if tir[1] < -8:
-                self.tirs_liste.remove(tir)
+    def tirs_droit(self):
+        for tir in self.tirs_liste: # si le joueur regarde vers la droite
+                tir[0] += 4
+                if tir[0] < -128 or tir[0] > 128:
+                    self.tirs_liste.remove(tir)
 
+    def tirs_gauche(self):
+        for tir in self.tirs_liste: # si le joueur regarde vers la dgauche
+                tir[0] -= 4
+                if tir[0] < 0 or tir[0] > 128:
+                    self.tirs_liste.remove(tir)
 
 player = Player(10, 55)
 
@@ -93,7 +101,10 @@ def update():
     update_camera()
 
     player.tirs()
-    player.tirs_deplacement()
+    if player.direction == 1:
+        player.tirs_droit()
+    if player.direction == -1:
+        player.tirs_gauche()
 
 
 def draw():
