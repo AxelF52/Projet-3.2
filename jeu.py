@@ -130,6 +130,9 @@ def draw():
     for tir in player.tirs_liste:
          pyxel.blt(tir[0], tir[1], 0, 32, 8, 8, 8)
 
+    for bonus in self.bonus_liste:
+                pyxel.blt(bonus["x"], bonus["y"], 0, 8, 8, 8, 8) # il faudra modifier le sprite
+
 
 def update_camera():
     player.cam_x = max(0, min(player.x - pyxel.width // 2, pyxel.tilemap(0).width * 8 - pyxel.width))
