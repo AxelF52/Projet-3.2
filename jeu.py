@@ -210,6 +210,32 @@ class Spiders:
         else:
             self.zone = False
 
+
+class menu:
+
+    def __init__(self):
+        self.pause = False
+        self.jeu_commence = False
+
+    def update(self):
+        if not self.jeu_commence:
+            if pyxel.btnp(pyxel.KEY_RETURN):
+                self.jeu_commence = True
+            return
+
+        if pyxel.btnp(pyxel.KEY_P):
+            self.pause = not self.pause
+        if self.pause:
+            return
+
+    #? Main Menu Draw
+    def draw(self)-> None:
+        pyxel.cls(0)
+        if not self.jeu_commence:
+            pyxel.text(80, 100, "MP3.2", pyxel.frame_count % 16)
+            pyxel.text(60, 130, "Appuyez sur ENTREE pour commencer", 7)
+            return
+
 player = Player(10, 55)
 spiders = [Spiders(70, 20, 16, 16, 0.8, 15, [0, 16, 32, 48]),
            Spiders(255, 83, 16, 16, 1, 15, [0, 16, 32, 48]),
@@ -258,6 +284,7 @@ def update():
     update_camera()
 
 
+
 def draw():
     pyxel.cls(0)
     cam_x, cam_y = player.cam_x, player.cam_y
@@ -271,8 +298,10 @@ def draw():
         pyxel.blt(0+i*12, 113, 0, 48, 200, 16, 16, 5)
 
 
+
 def update_camera():
     player.cam_x = max(0, min(player.x - pyxel.width // 4, pyxel.tilemap(0).width * 8 - pyxel.width))
+
 
 
 pyxel.run(update, draw)
