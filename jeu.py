@@ -304,7 +304,7 @@ class Abeille:
         if ((x - self.x)**2 + (y - self.y)**2)**0.5 < 10:
             return True
 
-player = Player(1900, 55)
+player = Player(20, 55)
 Ammos = [Ammo(107, 85), Ammo(287, 40), Ammo(436, 55), Ammo(572, 50), Ammo(808, 24), Ammo(777, 55), Ammo(955, 53), Ammo(1259, 17), Ammo(1359, 58), Ammo(1639, 76)]
 spiders = [Spiders(70, 20, 16, 16, 0.8, 15, [0, 16, 32, 48]),
            Spiders(255, 83, 16, 16, 1, 15, [0, 16, 32, 48]),
