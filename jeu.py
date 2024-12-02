@@ -16,9 +16,18 @@ class Player:
         self.speed = 1
         self.size = 16
         self.direction = 1
-        self.vie = 3
-        self.tirs_liste = []
-        self.tirs_direction = []
+        self.vie = 5
+        self.ammo = 2
+        self.block = [(22, 14), (23, 14), (22, 15), (23, 15), (25, 14), (24, 14), (25, 15), (24, 15), (1, 0), (22, 16), (22, 17),
+ (23, 16), (23, 17),
+ (24, 16), (24, 17),
+ (25, 16), (25, 17),
+ (26, 16), (26, 17),
+ (27, 16), (27, 17),
+ (28, 16), (28, 17),
+ (29, 16), (29, 17),
+ (30, 16), (30, 17),
+ (31, 16), (31, 17)]
 
     def draw(self, cam_x, cam_y):
         coeff = pyxel.frame_count // 6 % 6
@@ -30,56 +39,81 @@ class Player:
         if 4 <= coeff <= 5:
             coord = (0, 24)
         pyxel.blt(self.x - cam_x, self.y - cam_y + 1, 0, coord[0], coord[1], 16*self.direction, 16, 5)
+        for i in range(self.ammo):
+            x = 0+i*12
+            y = 0
+            pyxel.blt(112-x, y, 0, 0, 200, 16, 16, 5)
 
     def move(self, dx, dy):
         new_x = self.x + dx
         new_y = self.y + dy
+        left_tile = pyxel.tilemap(0).pget(self.x // 8, (new_y + self.size) // 8)
+        right_tile = pyxel.tilemap(0).pget((self.x + self.size - 1) // 8, (new_y + self.size) // 8)
+        if left_tile == (14, 0) or right_tile == (14, 0):
+            new_x = self.x + dx/3
+            new_y = self.y + dy/3
 
         if dx > 0 and not self.check_collision_right(new_x):
             self.x = new_x
         elif dx < 0 and not self.check_collision_left(new_x):
             self.x = new_x
 
-        if dy > 0 and not self.check_collision_below(new_y):
+        if dy > 0 and not self.check_collision_below(new_y) and self.y < 116:
             self.y = new_y
-        elif dy < 0 and not self.check_collision_above(new_y):
+        elif dy < 0 and not self.check_collision_above(new_y) and self.y > -2:
             self.y = new_y
 
     def check_collision_below(self, new_y):
         left_tile = pyxel.tilemap(0).pget(self.x // 8, (new_y + self.size) // 8)
         right_tile = pyxel.tilemap(0).pget((self.x + self.size - 1) // 8, (new_y + self.size) // 8)
-        return left_tile[0] == 1 or right_tile[0] == 1
+        if left_tile in self.block or right_tile in self.block:
+            print("oui l'eureka")
+            return True
+        else:
+            return False
 
     def check_collision_right(self, new_x):
         new_x = new_x - 1
         top_tile = pyxel.tilemap(0).pget((new_x + self.size) // 8, self.y // 8)
         bottom_tile = pyxel.tilemap(0).pget((new_x + self.size) // 8, (self.y + self.size - 1) // 8)
-        return top_tile[0] == 1 or bottom_tile[0] == 1
+        if top_tile in self.block or bottom_tile in self.block:
+            print("oui l'eureka")
+            return True
+        else:
+            return False
 
     def check_collision_left(self, new_x):
         top_tile = pyxel.tilemap(0).pget((new_x) // 8, self.y // 8)
         bottom_tile = pyxel.tilemap(0).pget((new_x) // 8, (self.y + self.size - 1) // 8)
-        return top_tile[0] == 1 or bottom_tile[0] == 1
+        if top_tile in self.block or bottom_tile in self.block:
+            print("oui l'eureka")
+            return True
+        else:
+            return False
 
     def check_collision_above(self, new_y):
         left_tile = pyxel.tilemap(0).pget(self.x // 8, new_y // 8)
         right_tile = pyxel.tilemap(0).pget((self.x + self.size - 1) // 8, new_y // 8)
-        return left_tile[0] == 1 or right_tile[0] == 1
+        if left_tile in self.block or right_tile in self.block:
+            print("oui l'eureka")
+            return True
+        else:
+            return False
 
 
 
 class Balles:
     def __init__(self, x, y, direction):
         self.x = x
-        self.y = y+4
+        self.y = y
         self.direction = direction
         self.speed = 0.3
 
     def update(self):
         self.x += self.speed * self.direction
 
-    def draw(self):
-        pyxel.blt(self.x, self.y, 0, 32, 8, 8, 8, 5)
+    def draw(self, cam_x, cam_y):
+        pyxel.blt(self.x-cam_x, self.y-cam_y, 0, 64, 56, 16, 16, 5)
 
 
 class Spiders:
@@ -96,15 +130,16 @@ class Spiders:
         self.skin = skin
         self.action = False
         self.attack = False
-        self.retour = False  # Nouvel état pour le retour
+        self.retour = False
         self.dx = self.dy = random.choice([-1, 1])
+        self.zone = False
 
     def update(self):
-        if self.retour:  # Gestion du retour à la position de départ
+        if self.retour:
             dx = self.start_x - self.x
             dy = self.start_y - self.y
             distance = (dx ** 2 + dy ** 2) ** 0.5
-            if distance < 1:  # Arrêt une fois arrivé à la position de départ
+            if distance < 1:
                 self.retour = False
                 self.action = False
             else:
@@ -113,15 +148,15 @@ class Spiders:
                 self.x += dx * self.speed
                 self.y += dy * self.speed
                 self.direction = 1 if dx > 0 else -1
-
-        elif self.attack:  # Comportement d'attaque
+        elif self.attack:
             dx = player.x - self.x
             dy = player.y - self.y
             distance = (dx ** 2 + dy ** 2) ** 0.5
             if distance > 70:
                 self.attack = False
-            elif distance < 3:  # Si collision avec le joueur
-                self.retour = True  # Déclenche le retour
+            elif distance < 3:
+                player.vie -= 1
+                self.retour = True
                 self.attack = False
             else:
                 dx /= distance
@@ -130,10 +165,10 @@ class Spiders:
                 self.y += dy * self.speed * 1.5
                 self.direction = 1 if dx > 0 else -1
 
-        else:  # Mouvement aléatoire
+        else:
             if random.random() < 0.01:
                 self.action = True
-                angle = random.uniform(0, 2 * math.pi)  # Angle en radians
+                angle = random.uniform(0, 2 * math.pi)
                 self.dx = math.cos(angle)
                 self.dy = math.sin(angle)
             if self.action:
@@ -154,62 +189,72 @@ class Spiders:
             pyxel.blt(self.x - cam_x, self.y - cam_y, 0, self.skin[2], 136, self.width * self.direction, self.height, 5)
         if coeff == 3:
             pyxel.blt(self.x - cam_x, self.y - cam_y, 0, self.skin[3], 136, self.width * self.direction, self.height, 5)
+        if self.zone:
+            pyxel.blt(self.x + 4 - cam_x, self.y - 8 - cam_y, 0, 16, 232, 16, 16, 5)
+        if self.attack:
+            pyxel.blt(self.x + 4 - cam_x, self.y - 8 - cam_y, 0, 32, 232, 16, 16, 5)
 
     def is_collisions(self, x, y):
-        if ((x - self.x-player.cam_x)**2 + (y - self.y-player.cam_y)**2)**0.5 < 3:
-            self.attack = True
+        if ((x - self.x-8)**2 + (y - self.y-4)**2)**0.5 < 7:
             return True
 
     def detect_joueur(self, x, y):
         if not self.retour and ((x - self.x)**2 + (y - self.y)**2)**0.5 < 50:
             self.attack = True
+            self.zone = False
+            return True
 
+    def detect_joueur_zone(self, x, y):
+        if not self.retour and not self.attack and 50 < ((x - self.x)**2 + (y - self.y)**2)**0.5 < 70:
+            self.zone = True
+        else:
+            self.zone = False
 
 player = Player(10, 55)
-spiders = [Spiders(70, 20, 16, 16, 0.5, 15, [0, 16, 32, 48]),
+spiders = [Spiders(70, 20, 16, 16, 0.8, 15, [0, 16, 32, 48]),
            Spiders(255, 83, 16, 16, 1, 15, [0, 16, 32, 48]),
-           Spiders(198, 50, 16, 16, 0.2, 15, [0, 16, 32, 48]),
-           Spiders(512, 22, 16, 16, 0.4, 15, [0, 16, 32, 48]),
-           Spiders(659, 35, 20, 16, 16, 0.5,  [0, 16, 32, 48]),
-           Spiders(745, 75, 16, 16, 0.5, 15, [0, 16, 32, 48]),
-           Spiders(923, 21, 16, 16, 0.7, 15, [0, 16, 32, 48]),
-           Spiders(1053, 50, 16, 16, 0.2, 15, [0, 16, 32, 48]),
-           Spiders(1144, 22, 16, 16, 0.4, 15, [0, 16, 32, 48]),
-           Spiders(1498, 27, 16, 16, 0.5, 15, [0, 16, 32, 48]),
-           Spiders(1750, 52, 16, 16, 0.5, 15, [0, 16, 32, 48])]
+           Spiders(198, 50, 16, 16, 0.9, 15, [0, 16, 32, 48]),
+           Spiders(512, 22, 16, 16, 1.4, 15, [0, 16, 32, 48]),
+           Spiders(659, 35, 20, 16, 1.3, 15,  [0, 16, 32, 48]),
+           Spiders(745, 75, 16, 16, 1.5, 15, [0, 16, 32, 48]),
+           Spiders(923, 21, 16, 16, 1.7, 15, [0, 16, 32, 48]),
+           Spiders(1053, 50, 16, 16, 0.8, 15, [0, 16, 32, 48]),
+           Spiders(1144, 22, 16, 16, 1.4, 15, [0, 16, 32, 48]),
+           Spiders(1498, 27, 16, 16, 1.5, 15, [0, 16, 32, 48]),
+           Spiders(1750, 52, 16, 16, 2, 15, [0, 16, 32, 48])]
 balles = []
 
 def update():
-    if pyxel.btn(pyxel.KEY_LEFT):
+    global tps
+    if pyxel.btn(pyxel.KEY_LEFT) or pyxel.btn(pyxel.KEY_Q):
         player.move(-player.speed, 0)
         player.direction = -1
-    if pyxel.btn(pyxel.KEY_RIGHT):
+    if pyxel.btn(pyxel.KEY_RIGHT) or pyxel.btn(pyxel.KEY_D):
         player.move(player.speed, 0)
         player.direction = 1
-    if pyxel.btn(pyxel.KEY_UP):
+    if pyxel.btn(pyxel.KEY_UP) or pyxel.btn(pyxel.KEY_Z):
         player.move(0, -player.speed)
-    if pyxel.btn(pyxel.KEY_DOWN):
+    if pyxel.btn(pyxel.KEY_DOWN) or pyxel.btn(pyxel.KEY_S):
         player.move(0, player.speed)
     if pyxel.btn(pyxel.KEY_A):
         print(player.x, player.y)
     if pyxel.btnp(pyxel.KEY_SPACE):
-        cam_x, cam_y = player.cam_x, player.cam_y
-        balles.append(Balles(player.x-cam_x, player.y-cam_y, player.direction))
+        if player.ammo > 0:
+            balles.append(Balles(player.x, player.y, player.direction))
+            player.ammo -= 1
 
     for spider in spiders:
-        spider.update()
-        if spider.is_collisions(player.x, player.y):
-            player.vie -= 1
-            spider.retour = True
         for balle in balles:
-            balle.update()
-            if not 0< balle.x < 128:
-                balles.remove(balle)
             if spider.is_collisions(balle.x, balle.y):
                 spiders.remove(spider)
                 balles.remove(balle)
+        spider.update()
+        for balle in balles:
+            balle.update()
+            if not 0+player.cam_x< balle.x < 128+player.cam_x:
+                balles.remove(balle)
         spider.detect_joueur(player.x, player.y)
-
+        spider.detect_joueur_zone(player.x, player.y)
     update_camera()
 
 
@@ -220,13 +265,14 @@ def draw():
     for spider in spiders:
         spider.draw(cam_x, cam_y)
     for balle in balles:
-        balle.draw()
+        balle.draw(cam_x, cam_y)
     player.draw(cam_x, cam_y)
-    pyxel.blt(112, 1, 0, 48, 216, 16, 16, 5)
+    for i in range(player.vie):
+        pyxel.blt(0+i*12, 113, 0, 48, 200, 16, 16, 5)
 
 
 def update_camera():
-    player.cam_x = max(0, min(player.x - pyxel.width // 2, pyxel.tilemap(0).width * 8 - pyxel.width))
+    player.cam_x = max(0, min(player.x - pyxel.width // 4, pyxel.tilemap(0).width * 8 - pyxel.width))
 
 
 pyxel.run(update, draw)
