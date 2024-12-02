@@ -28,6 +28,7 @@ class Player:
  (29, 16), (29, 17),
  (30, 16), (30, 17),
  (31, 16), (31, 17)]
+        self.fin = False
 
     def draw(self, cam_x, cam_y):
         coeff = pyxel.frame_count // 6 % 6
@@ -67,7 +68,6 @@ class Player:
         left_tile = pyxel.tilemap(0).pget(self.x // 8, (new_y + self.size) // 8)
         right_tile = pyxel.tilemap(0).pget((self.x + self.size - 1) // 8, (new_y + self.size) // 8)
         if left_tile in self.block or right_tile in self.block:
-            print("oui l'eureka")
             return True
         else:
             return False
@@ -77,7 +77,6 @@ class Player:
         top_tile = pyxel.tilemap(0).pget((new_x + self.size) // 8, self.y // 8)
         bottom_tile = pyxel.tilemap(0).pget((new_x + self.size) // 8, (self.y + self.size - 1) // 8)
         if top_tile in self.block or bottom_tile in self.block:
-            print("oui l'eureka")
             return True
         else:
             return False
@@ -86,7 +85,6 @@ class Player:
         top_tile = pyxel.tilemap(0).pget((new_x) // 8, self.y // 8)
         bottom_tile = pyxel.tilemap(0).pget((new_x) // 8, (self.y + self.size - 1) // 8)
         if top_tile in self.block or bottom_tile in self.block:
-            print("oui l'eureka")
             return True
         else:
             return False
@@ -95,7 +93,6 @@ class Player:
         left_tile = pyxel.tilemap(0).pget(self.x // 8, new_y // 8)
         right_tile = pyxel.tilemap(0).pget((self.x + self.size - 1) // 8, new_y // 8)
         if left_tile in self.block or right_tile in self.block:
-            print("oui l'eureka")
             return True
         else:
             return False
@@ -223,32 +220,65 @@ class Spiders:
             self.zone = False
 
 
-class menu:
+class Menu:
 
     def __init__(self):
-        self.pause = False
         self.jeu_commence = False
 
     def update(self):
         if not self.jeu_commence:
             if pyxel.btnp(pyxel.KEY_RETURN):
+                if player.vie < 1:
+                    pyxel.quit()
                 self.jeu_commence = True
-            return
-
-        if pyxel.btnp(pyxel.KEY_P):
-            self.pause = not self.pause
-        if self.pause:
-            return
 
     #? Main Menu Draw
-    def draw(self)-> None:
+    def draw(self):
         pyxel.cls(0)
         if not self.jeu_commence:
-            pyxel.text(80, 100, "MP3.2", pyxel.frame_count % 16)
-            pyxel.text(60, 130, "Appuyez sur ENTREE pour commencer", 7)
-            return
+            pyxel.bltm(0, 0, 2, 0, 0, 128, 128)
+            pyxel.text(35, 15, "Projet 3.2", 7)
+            pyxel.text(13, 5, "Camille Sehy & Fluchinfo", 7)
+            pyxel.text(50, 110, "Appuyez sur ENTREE \n pour commencer", 7)
 
-player = Player(10, 55)
+
+class Abeille:
+    def __init__(self, x, y):
+        self.x = x
+        self.start_x = x
+        self.start_y = y
+        self.y = y
+        self.width = 16
+        self.height = 16
+        self.speed = random.randint(1, 2)
+        self.direction = -1
+        self.action = False
+        self.attack = False
+        self.retour = False
+        self.dx = self.dy = random.choice([-1, 1])
+        self.zone = False
+
+    def update(self):
+        if not self.attack:
+            self.x -= self.speed * random.random()
+
+    def draw(self, cam_x, cam_y):
+        coeff = pyxel.frame_count // 2 % 2
+        if coeff == 0:
+            pyxel.blt(self.x - cam_x, self.y - cam_y, 0, 128, 8, self.width * self.direction, self.height, 5)
+        if coeff == 1:
+            pyxel.blt(self.x - cam_x, self.y - cam_y, 0, 144, 8, self.width * self.direction, self.height, 5)
+
+    def detect_joueur(self, x, y):
+        if not self.retour and ((x - self.x)**2 + (y - self.y)**2)**0.5 < 50:
+            self.attack = True
+            return True
+
+    def dardez_moi(self, x, y):
+        if ((x - self.x)**2 + (y - self.y)**2)**0.5 < 10:
+            return True
+
+player = Player(1956, 55)
 Ammos = [Ammo(107, 85), Ammo(287, 40), Ammo(436, 55), Ammo(572, 50), Ammo(808, 24), Ammo(777, 55), Ammo(955, 53), Ammo(1259, 17), Ammo(1359, 58), Ammo(1639, 76)]
 spiders = [Spiders(70, 20, 16, 16, 0.8, 15, [0, 16, 32, 48]),
            Spiders(255, 83, 16, 16, 1, 15, [0, 16, 32, 48]),
@@ -261,6 +291,10 @@ spiders = [Spiders(70, 20, 16, 16, 0.8, 15, [0, 16, 32, 48]),
            Spiders(1144, 22, 16, 16, 1.4, 15, [0, 16, 32, 48]),
            Spiders(1498, 27, 16, 16, 1.5, 15, [0, 16, 32, 48]),
            Spiders(1750, 52, 16, 16, 2, 15, [0, 16, 32, 48])]
+bees = []
+for i in range(128):
+    if i % 2 == 0:
+        bees.append(Abeille(2200, i))
 balles = []
 
 def update():
@@ -281,6 +315,8 @@ def update():
         if player.ammo > 0:
             balles.append(Balles(player.x, player.y, player.direction))
             player.ammo -= 1
+    if player.x > 1956:
+        player.fin = True
 
     for spider in spiders:
         for balle in balles:
@@ -303,6 +339,14 @@ def update():
                 except:
                     pass
 
+    if player.vie < 1:
+        start.jeu_commence = False
+        pyxel.run(update_menu, draw_menu)
+    if player.fin:
+        for bee in bees:
+            if bee.dardez_moi(player.x, player.y):
+                player.vie -= 10
+            bee.update()
     update_camera()
 
 
@@ -320,12 +364,24 @@ def draw():
         pyxel.blt(0+i*12, 113, 0, 48, 200, 16, 16, 5)
     for ammo in Ammos:
         ammo.draw(cam_x, cam_y)
+    if player.fin:
+        for bee in bees:
+            bee.draw(cam_x, cam_y)
 
 
 
 def update_camera():
     player.cam_x = max(0, min(player.x - pyxel.width // 4, pyxel.tilemap(0).width * 8 - pyxel.width))
 
+start = Menu()
 
 
-pyxel.run(update, draw)
+def update_menu():
+    start.update()
+    if start.jeu_commence:
+        pyxel.run(update, draw)
+
+def draw_menu():
+    start.draw()
+
+pyxel.run(update_menu, draw_menu)
