@@ -101,6 +101,18 @@ class Player:
             return False
 
 
+class Ammo:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+    def draw(self, cam_x, cam_y):
+        pyxel.blt(self.x - cam_x, self.y - cam_y, 0, 0, 200, 16, 16, 5)
+
+    def coll_joueur(self, x, y):
+        if ((x - self.x)**2 + (y - self.y)**2)**0.5 < 10:
+            return True
+
 
 class Balles:
     def __init__(self, x, y, direction):
@@ -237,6 +249,7 @@ class menu:
             return
 
 player = Player(10, 55)
+Ammos = [Ammo(107, 85), Ammo(287, 40), Ammo(436, 55), Ammo(572, 50), Ammo(808, 24), Ammo(777, 55), Ammo(955, 53), Ammo(1259, 17), Ammo(1359, 58), Ammo(1639, 76)]
 spiders = [Spiders(70, 20, 16, 16, 0.8, 15, [0, 16, 32, 48]),
            Spiders(255, 83, 16, 16, 1, 15, [0, 16, 32, 48]),
            Spiders(198, 50, 16, 16, 0.9, 15, [0, 16, 32, 48]),
@@ -281,6 +294,15 @@ def update():
                 balles.remove(balle)
         spider.detect_joueur(player.x, player.y)
         spider.detect_joueur_zone(player.x, player.y)
+    for ammo in Ammos:
+        if ammo.coll_joueur(player.x, player.y):
+            if player.ammo < 5:
+                player.ammo += 1
+                try:
+                    Ammos.remove(ammo)
+                except:
+                    pass
+
     update_camera()
 
 
@@ -296,6 +318,8 @@ def draw():
     player.draw(cam_x, cam_y)
     for i in range(player.vie):
         pyxel.blt(0+i*12, 113, 0, 48, 200, 16, 16, 5)
+    for ammo in Ammos:
+        ammo.draw(cam_x, cam_y)
 
 
 
