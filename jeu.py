@@ -29,6 +29,7 @@ class Player:
  (30, 16), (30, 17),
  (31, 16), (31, 17)]
         self.fin = False
+        self.save = []
 
     def draw(self, cam_x, cam_y):
         coeff = pyxel.frame_count // 6 % 6
@@ -48,8 +49,14 @@ class Player:
     def move(self, dx, dy):
         new_x = self.x + dx
         new_y = self.y + dy
-        left_tile = pyxel.tilemap(0).pget(self.x // 8, (new_y + self.size) // 8)
-        right_tile = pyxel.tilemap(0).pget((self.x + self.size - 1) // 8, (new_y + self.size) // 8)
+        if random.random() < 0.1:
+            self.save.append([new_x, new_y])
+        if not self.fin:
+            left_tile = pyxel.tilemap(0).pget(self.x // 8, (new_y + self.size) // 8)
+            right_tile = pyxel.tilemap(0).pget((self.x + self.size - 1) // 8, (new_y + self.size) // 8)
+        else:
+            left_tile = pyxel.tilemap(1).pget(self.x // 8, (new_y + self.size) // 8)
+            right_tile = pyxel.tilemap(1).pget((self.x + self.size - 1) // 8, (new_y + self.size) // 8)
         if left_tile == (14, 0) or right_tile == (14, 0):
             new_x = self.x + dx/3
             new_y = self.y + dy/3
@@ -65,8 +72,12 @@ class Player:
             self.y = new_y
 
     def check_collision_below(self, new_y):
-        left_tile = pyxel.tilemap(0).pget(self.x // 8, (new_y + self.size) // 8)
-        right_tile = pyxel.tilemap(0).pget((self.x + self.size - 1) // 8, (new_y + self.size) // 8)
+        if not self.fin:
+            left_tile = pyxel.tilemap(0).pget(self.x // 8, (new_y + self.size) // 8)
+            right_tile = pyxel.tilemap(0).pget((self.x + self.size - 1) // 8, (new_y + self.size) // 8)
+        else:
+            left_tile = pyxel.tilemap(1).pget(self.x // 8, new_y // 8)
+            right_tile = pyxel.tilemap(1).pget((self.x + self.size - 1) // 8, new_y // 8)
         if left_tile in self.block or right_tile in self.block:
             return True
         else:
@@ -74,24 +85,36 @@ class Player:
 
     def check_collision_right(self, new_x):
         new_x = new_x - 1
-        top_tile = pyxel.tilemap(0).pget((new_x + self.size) // 8, self.y // 8)
-        bottom_tile = pyxel.tilemap(0).pget((new_x + self.size) // 8, (self.y + self.size - 1) // 8)
+        if not self.fin:
+            top_tile = pyxel.tilemap(0).pget((new_x + self.size) // 8, self.y // 8)
+            bottom_tile = pyxel.tilemap(0).pget((new_x + self.size) // 8, (self.y + self.size - 1) // 8)
+        else:
+            top_tile = pyxel.tilemap(1).pget((new_x + self.size) // 8, self.y // 8)
+            bottom_tile = pyxel.tilemap(1).pget((new_x + self.size) // 8, (self.y + self.size - 1) // 8)
         if top_tile in self.block or bottom_tile in self.block:
             return True
         else:
             return False
 
     def check_collision_left(self, new_x):
-        top_tile = pyxel.tilemap(0).pget((new_x) // 8, self.y // 8)
-        bottom_tile = pyxel.tilemap(0).pget((new_x) // 8, (self.y + self.size - 1) // 8)
+        if not self.fin:
+            top_tile = pyxel.tilemap(0).pget((new_x) // 8, self.y // 8)
+            bottom_tile = pyxel.tilemap(0).pget((new_x) // 8, (self.y + self.size - 1) // 8)
+        else:
+            top_tile = pyxel.tilemap(1).pget((new_x) // 8, self.y // 8)
+            bottom_tile = pyxel.tilemap(1).pget((new_x) // 8, (self.y + self.size - 1) // 8)
         if top_tile in self.block or bottom_tile in self.block:
             return True
         else:
             return False
 
     def check_collision_above(self, new_y):
-        left_tile = pyxel.tilemap(0).pget(self.x // 8, new_y // 8)
-        right_tile = pyxel.tilemap(0).pget((self.x + self.size - 1) // 8, new_y // 8)
+        if not self.fin:
+            left_tile = pyxel.tilemap(0).pget(self.x // 8, new_y // 8)
+            right_tile = pyxel.tilemap(0).pget((self.x + self.size - 1) // 8, new_y // 8)
+        else:
+            left_tile = pyxel.tilemap(1).pget(self.x // 8, new_y // 8)
+            right_tile = pyxel.tilemap(1).pget((self.x + self.size - 1) // 8, new_y // 8)
         if left_tile in self.block or right_tile in self.block:
             return True
         else:
@@ -257,28 +280,31 @@ class Abeille:
         self.retour = False
         self.dx = self.dy = random.choice([-1, 1])
         self.zone = False
+        self.explose_bool = False
 
     def update(self):
         if not self.attack:
-            self.x -= self.speed * random.random()
+            self.x -= self.speed * random.randint(0, 150)/100
+
+    def explose(self):
+        self.explose_bool = True
 
     def draw(self, cam_x, cam_y):
-        coeff = pyxel.frame_count // 2 % 2
-        if coeff == 0:
-            pyxel.blt(self.x - cam_x, self.y - cam_y, 0, 128, 8, self.width * self.direction, self.height, 5)
-        if coeff == 1:
-            pyxel.blt(self.x - cam_x, self.y - cam_y, 0, 144, 8, self.width * self.direction, self.height, 5)
-
-    def detect_joueur(self, x, y):
-        if not self.retour and ((x - self.x)**2 + (y - self.y)**2)**0.5 < 50:
-            self.attack = True
-            return True
+        if not self.explose_bool:
+            coeff = pyxel.frame_count // 2 % 2
+            if coeff == 0:
+                pyxel.blt(self.x - cam_x, self.y - cam_y, 0, 128, 8, self.width * self.direction, self.height, 5)
+            if coeff == 1:
+                pyxel.blt(self.x - cam_x, self.y - cam_y, 0, 144, 8, self.width * self.direction, self.height, 5)
+        else:
+            coeff = pyxel.frame_count // 6 % 6
+            pyxel.blt(self.x - cam_x, self.y - cam_y, 0, 128, 32+(16*coeff), self.width * self.direction, self.height, 5)
 
     def dardez_moi(self, x, y):
         if ((x - self.x)**2 + (y - self.y)**2)**0.5 < 10:
             return True
 
-player = Player(1956, 55)
+player = Player(1900, 55)
 Ammos = [Ammo(107, 85), Ammo(287, 40), Ammo(436, 55), Ammo(572, 50), Ammo(808, 24), Ammo(777, 55), Ammo(955, 53), Ammo(1259, 17), Ammo(1359, 58), Ammo(1639, 76)]
 spiders = [Spiders(70, 20, 16, 16, 0.8, 15, [0, 16, 32, 48]),
            Spiders(255, 83, 16, 16, 1, 15, [0, 16, 32, 48]),
@@ -294,11 +320,12 @@ spiders = [Spiders(70, 20, 16, 16, 0.8, 15, [0, 16, 32, 48]),
 bees = []
 for i in range(128):
     if i % 2 == 0:
-        bees.append(Abeille(2200, i))
+        bees.append(Abeille(2100, i))
+        bees.append(Abeille(2100, i))
 balles = []
 
 def update():
-    global tps
+    global tps, spiders
     if pyxel.btn(pyxel.KEY_LEFT) or pyxel.btn(pyxel.KEY_Q):
         player.move(-player.speed, 0)
         player.direction = -1
@@ -314,10 +341,13 @@ def update():
     if pyxel.btnp(pyxel.KEY_SPACE):
         if player.ammo > 0:
             balles.append(Balles(player.x, player.y, player.direction))
-            player.ammo -= 1
+            if not player.fin:
+                player.ammo -= 1
     if player.x > 1956:
         player.fin = True
-
+        spiders = [Spiders(70, 20, 16, 16, 0.8, 15, [0, 16, 32, 48]),
+                   Spiders(1144, 22, 16, 16, 1.4, 15, [0, 16, 32, 48])]
+        player.ammo = 5
     for spider in spiders:
         for balle in balles:
             if spider.is_collisions(balle.x, balle.y):
@@ -326,7 +356,7 @@ def update():
         spider.update()
         for balle in balles:
             balle.update()
-            if not 0+player.cam_x< balle.x < 128+player.cam_x:
+            if not balle.x < 128+player.cam_x:
                 balles.remove(balle)
         spider.detect_joueur(player.x, player.y)
         spider.detect_joueur_zone(player.x, player.y)
@@ -347,6 +377,9 @@ def update():
             if bee.dardez_moi(player.x, player.y):
                 player.vie -= 10
             bee.update()
+            if player.x < 100:
+                bee.explose()
+                bees.remove(bee)
     update_camera()
 
 
@@ -354,7 +387,10 @@ def update():
 def draw():
     pyxel.cls(0)
     cam_x, cam_y = player.cam_x, player.cam_y
-    pyxel.bltm(0, 0, 0, cam_x, cam_y, pyxel.width, pyxel.height)
+    if not player.fin:
+        pyxel.bltm(0, 0, 0, cam_x, cam_y, pyxel.width, pyxel.height)
+    else:
+        pyxel.bltm(0, 0, 1, cam_x, cam_y, pyxel.width, pyxel.height)
     for spider in spiders:
         spider.draw(cam_x, cam_y)
     for balle in balles:
@@ -367,6 +403,10 @@ def draw():
     if player.fin:
         for bee in bees:
             bee.draw(cam_x, cam_y)
+        if player.x < 1900:
+            player.speed = 2
+        if player.x < 100:
+            pyxel.run(update, draw)
 
 
 
